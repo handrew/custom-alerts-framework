@@ -1,4 +1,4 @@
-clicks
+click
 requests
 pandas
 twilio
