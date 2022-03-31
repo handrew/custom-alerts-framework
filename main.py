@@ -75,13 +75,16 @@ def create_rules_from_functions(definition_functions):
 
 
 @cli.command()
-def run():
+@click.option("--dont_bother_for", default=5 * 60, help="how long to wait between alerts of the same rule")
+def run(dont_bother_for):
     """Main subroutine."""
     print("Creating rules...")
     defined_functions = getmembers(definitions, isfunction)
     rules = create_rules_from_functions(defined_functions)
-    print("Starting...")
-    schedule = Scheduler(rules)
+    for rule in rules:
+        print("> {}".format(rule.name))
+    print("\nStarting...")
+    schedule = Scheduler(rules, dont_bother_for=dont_bother_for)
     schedule.run()
 
 

@@ -23,7 +23,7 @@ class Rule:
         return self.time_fn(time.time())
 
     def is_triggered(self, logs, **kwargs):
-        is_triggered = self.predicate_fn(logs, **kwargs)
+        is_triggered = self.predicate_fn(**kwargs)
         if is_triggered:
             self.last_triggered.append(int(time.time()))
         return is_triggered
