@@ -1,6 +1,6 @@
 .env
 logs/
-rules/definitions.py
+logic/definitions.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
