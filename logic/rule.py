@@ -2,7 +2,9 @@ import time
 
 
 class Rule:
-    """Rule is a wrapper over a predicate function and a time function.
+    """Rule is a wrapper over a predicate function, a time function, and an
+    alert function. It handles communications between the predicate fn and
+    the alert fn..
 
     The predicate function takes the history of logs (for caching purposes)
     and tells you whether or not the alert should be triggered.
@@ -22,11 +24,12 @@ class Rule:
     def is_time_yet_to_check(self):
         return self.time_fn(time.time())
 
-    def is_triggered(self, logs, **kwargs):
+    def is_triggered(self, **kwargs):
         is_triggered = self.predicate_fn(**kwargs)
+        assert isinstance(is_triggered, dict), "Predicate function must return a dict."
         if is_triggered:
             self.last_triggered.append(int(time.time()))
         return is_triggered
 
-    def alert(self):
-        self.alert_fn()
+    def alert(self, data={}):
+        self.alert_fn(data=data)

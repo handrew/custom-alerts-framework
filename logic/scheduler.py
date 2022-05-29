@@ -29,6 +29,15 @@ class Scheduler:
         last_time = self.state[self.state["rule"] == rule.name].timestamp.iloc[-1]
         return last_time
 
+    def _last_alert_was_too_soon(self, rule):
+        last_time = self._get_last_time_rule_was_alerted(rule)
+        if (
+            last_time
+            and time.time() - last_time <= self.dont_bother_for
+        ):
+            return True
+        return False
+
     def run(self):
         """Main entrypoint."""
         while True:
@@ -36,20 +45,18 @@ class Scheduler:
             for rule in self.rules:
 
                 if rule.is_time_yet_to_check():
-                    rule_is_triggered = rule.is_triggered(logs=self.state)
+                    rule_data = rule.is_triggered(logs=self.state)
 
-                    if rule_is_triggered:
-                        # Trigger the alert.
-                        last_time = self._get_last_time_rule_was_alerted(rule)
-                        if (
-                            last_time
-                            and time.time() - last_time <= self.dont_bother_for
-                        ):
+                    if rule_data:
+                        # Check if it was too soon.
+                        # NOTE: DO NOT LOG HERE, IT WILL BREAK THE CHECK!
+                        if self._last_alert_was_too_soon(rule):
                             print("Don't bother sending an alert. Too soon!")
                             continue
 
+                        # Trigger the alert.
                         print("Rule {} was triggered! Alerting.".format(rule.name))
-                        rule.alert()
+                        rule.alert(data=rule_data)
 
-                        # Log the alert.
-                        self.log_rule(rule, rule_is_triggered)
+                        # Log the alert, including the time.
+                        self.log_rule(rule, rule_data)
